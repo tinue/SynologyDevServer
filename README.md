@@ -24,19 +24,19 @@ While it would be possible to use the Synology Docker GUI to download and setup 
 ### Setup the Synology Reverse Proxy
 Today's browsers do not like unencrypted web sites. To solve this problem, the Synology reverse proxy can be used to redirect traffic from a friendly URL such as `https://jenkins.example.com` to the non-encrypted site running as a docker container (such as `http://synology.example.com:9001`). As an additional bonus you do not have to remember all of the port numbers.
 
-To set this up, go to the "Application Portal" in the Synology Control Panel. Select the "Reverse Proxy" tab. Add three entries, so that it looks similar to this picture in the end:
+To set this up, go to the "Application Portal" in the Synology Control Panel. Select the "Reverse Proxy" tab. Add three entries, so that it looks similar to this picture:
 
 ![Reverse-Proxy](screenshots/reverse-proxy.png)
 
-Of course you have to use a proper domain name that works in your intranet. The setup of such an infrastructure is beyond this project. Since you have a Synology (or you would not use this project), I recommend to use the Domain Name Server of the Synology to do this. If everything else fails, you can always hardcode the three DNS names into the `hosts` file of your development computer.
+Of course you have to use a proper domain name that works in your intranet. The setup of such an infrastructure is beyond this project. Since you have a Synology (or you would not use this project), I recommend to use the DNS Server package. If everything else fails, you can always hardcode the three DNS names into the `hosts` file of your development computer.
 
 The port numbers (9000, 9001 and 9002) are defined in the `docker-compose.yaml` file. If you want to change them, you can. 
 
 ## Download the Project files to the Synology
 ### Login to the Synology
 * Login to the Synology. How this is done depends on your platform.
-  * On a Mac or Linux system, use `ssh 192.168.243.48` (the IP address is just an example, you have to use the address of your Synology).  
-  * On Windows, an SSH client must be used, such as putty. You can also use the Linux subsystem of Windows 10 and there use `ssh`.
+  * On a Mac or Linux system, use `ssh synology.example.com` (the name is just an example, you have to use the name of your Synology).  
+  * On Windows, an SSH client must be used, such as putty. You can also use `ssh`in the Windows Subsystem for Linux.
   
 ## Clone the Project
 * Once you are logged in, change into the `docker` directory. Often this is `/volume1/docker` but this can change if you have more than one volume defined.
@@ -46,10 +46,12 @@ The port numbers (9000, 9001 and 9002) are defined in the `docker-compose.yaml` 
 
 # Startup
 ## Start the Servers
-* This command starts all of the servers: `docker-compose up -d`.
+* This command starts all of the servers: `sudo docker-compose up -d`.
 
 ## Check if the servers are running
-Open the Docker package on the Synology. You should see all three containers running. ![Docker](screenshots/running-images.png)
+Open the Docker package on the Synology. You should see all three containers running.
+ 
+![Docker](screenshots/running-images.png)
 
 # First Start
 Technically we are finished now: The servers are running. Nevertheless, here are a few hints to get you started using the services.
@@ -94,19 +96,19 @@ Then, open Nexus in a web browser: `https://nexus.example.com`. Click "Sign in" 
 * Why do the docker commands require `sudo`?
   * On Linux systems, this can be avoided by adding the user to the `docker` group. On a Synology this does not work, unfortunately.
 * Can the development server be hacked?
-  * Possibly: If someone gains access to the Docker socket, then this person is for all practical purposes a `root` user of the entire Synology. The images `Jenkins` and `Portainer` need access to the Docker socket to function. In addition, `Portainer` runs as `root`. All of this combined means that if someone can hack `Jenkins` or `Portainer`, then this person has unlimited access to the Synology Disk Station. This is why this project is about a *private* development server, and not a public one. Do not expose this to the Internet!
+  * Possibly: If someone gains access to the Docker socket, then this person is for all practical purposes a `root` user of the entire Synology. The images `Jenkins` and `Portainer` need access to the Docker socket to function. In addition, `Portainer` runs as `root`. All of this combined means that if someone can hack `Jenkins` or `Portainer`, then this person has unlimited access to the Synology DiskStation. This is why this project is about a *private* development server, and not a public one. Operate the Synology behind a firewall only!
 * How can I reset my servers?
   * For a full reset, you have to delete all volumes. This can be done easily by shutting down like this: `sudo docker-compose down -v`.
   * For a partial reset, you can manually delete the matching volume. Use `sudo docker volume ls` to list the existing volumes. Then use `sudo docker volume rm [volumename]` to delete. For example, `sudo docker volume rm synologydevserver_jenkins_home` resets Jenkins.
 * Do I need Portainer?
-  * No, you can instead use the GUI of the Synology Docker package. Just remove the "Portainer" part of the docker-compose.yaml file, and also remove the "depends-on" sections in the two other services. Strictly speaking, the "depends-on" is incorrect anyway. I just wanted Portainer to be up and running before the other packages start up.
+  * No, you can instead use the GUI of the Synology Docker package. Just remove the "Portainer" part of the `docker-compose.yaml` file, and also remove the `depends-on` sections in the two other services. Strictly speaking, the `depends-on` is incorrect anyway. I just wanted Portainer to be up and running before the other packages start up.
 * How do I backup the data?
   * TODO: Provide an answer
 * How can I upgrade the packages?
   * `sudo docker-compose down && sudo docker-compose pull && sudo docker-compose up -d`.
   * TODO: Automatic upgrades
 * What is this: `user: "1000:0"` in the Jenkins service description?
-  * Jenkins by default runs as `uid:gid` `1000:1000`. Most docker packages simply run as `root`, or `0:0`. Unfortunately, this does not allow to access the docker socket of the Synology Docker package. Only root can do this. The simplest workaround is to start Jenkins with a group-id of zero, or `root`.
+  * Jenkins by default runs as `uid:gid` `1000:1000` (most docker packages simply run as `root`, or `0:0`). Unfortunately, this does not allow Jenkins to access the Docker socket of the Synology Docker daemon, only root can do this. The simplest workaround is to start Jenkins with a group-id of zero, or `root`.
 
 # Release History
-* 2019-07-13: Start work
+* 1.0.0, 2019-07-13: First version
