@@ -38,8 +38,21 @@ While it would be possible to use the Synology Docker GUI to download and setup 
 * This command starts all of the servers: `docker-compose up -d`.
 
 ## Check if the servers are running
-Open the Docker package on the Synology. You should see all three containers running.
+Open the Docker package on the Synology. You should see all three containers running. ![Docker](screenshots/running-images.png)
 
+# TODO
+* Bind-Mount docker socket
+* Explain Jenkins login (docker logs jenkins)
+* Explain Portainer login (shutdown after a few minutes)
+
+# FAQ
+* Why do the docker commands require `sudo`?
+  * On Linux systems, this can be avoided by adding the user to the `docker` group. On a Synology this does not work, unfortunately.
+* Can this be hacked?
+  * Possibly: If someone gains access to the Docker socket, then this person is for all practical purposes a `root` user of the entire Synology. The images `Jenkins` and `Portainer` need access to the Docker socket to function. In addition, `Portainer` runs as `root`. All of this combined means that if someone can hack `Jenkins` or `Portainer`, then this person has unlimited access to the Synology Disk Station. This is why this project is about a *private* development server, and not a public one. Do not expose this to the Internet!
+* How can I reset my servers?
+  * For a full reset, you have to delete all volumes. This can be easily done by shutting down like this: `sudo docker-compose down -v`.
+  * For a partial reset, you can manually delete the matching volume. Use `sudo docker volume ls` to list the existing volumes. Then use `sudo docker volume rm [volumename]` to delete. For example, `sudo docker volume rm synologydevserver_jenkins_home` resets Jenkins.
 
 # Release History
 * 2019-07-13: Start work
