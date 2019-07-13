@@ -103,6 +103,3 @@ Then, open Nexus in a web browser: `https://nexus.example.com`. Click "Sign in" 
   * TODO: Automatic upgrades
 * What is this: `user: "1000:0"` in the Jenkins service description?
   * Jenkins by default runs as `uid:gid` `1000:1000` (most docker packages simply run as `root`, or `0:0`). Unfortunately, this does not allow Jenkins to access the Docker socket of the Synology Docker daemon, only root can do this. The simplest workaround is to start Jenkins with a group-id of zero, or `root`.
-
-# Release History
-* 1.0.0, 2019-07-13: First version
