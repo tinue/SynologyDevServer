@@ -1,16 +1,19 @@
 # Synology Development Server
 Use a Synology DiskStation as a private Java development server:
-* Jenkins to manage builds
-* Nexus to manage and cache packages
-* Administrative tools to support operation (Portainer)
+* [Jenkins](https://jenkins.io) to manage builds
+* [Nexus](https://www.sonatype.com/nexus-repository-sonatype) to manage and cache packages
+* Administrative tools to support operation ([Portainer](https://www.portainer.io))
 
-# Synology Preparation
-## Docker
-First, install the "Docker" package: ![Docker](screenshots/docker-installation.png)  
+# Installation
+## Synology Preparation
+### Install Packages
+Go to the packet manager and install these packages:
+* Docker
+* Git Server
 
-The installation will create a new folder named "docker". This is where all of the docker related files go. Initially, the folder is empty: ![Folder](screenshots/docker-folder.png).
+If your Synology does not support Docker, then this project is not for you.
 
-## Enable Secure Shell Login
+### Enable Secure Shell Login
 While it would be possible to use the Synology Docker GUI to download and setup all of the containers, this project uses docker-compose instead. This means that the command line is used, and this must be enabled first.
 * Open the Control Panel. Enable "Advanced Mode" if it is not enabled yet.
 * Then, select "Terminal & SNMP" and check the box for "Enable SSH service".
@@ -18,12 +21,19 @@ While it would be possible to use the Synology Docker GUI to download and setup 
 
 ![ssh](screenshots/ssh.png).
 
-## Install Git on the Synology
-* Go to the package manager again, and install the package "Git Server". The package does not have to be configured or set-up in any way, it's just here to get the `git` command.
+### Setup the Synology Reverse Proxy
+Todays browsers do not like unencrypted web sites. To solve this problem, the Synology reverse proxy can be used to redirect traffic from a friendly URL such as `https://jenkins.example.com` to the non-encrypted site running as a docker container (such as `http://synology.example.com:9001`). As an additional bonus you do not have to remember all of the port numbers.
 
-![Git](screenshots/git-server.png)
+To set this up, go to the "Application Portal" in the Synology Control Panel. Select the "Reverse Proxy" tab. Add three entries, so that it looks similar to this picture in the end:
 
-## Login to the Synology
+![Reverse-Proxy](screenshots/reverse-proxy.png)
+
+Of course you have to use a proper domain name that works in your intranet. The setup of such an infrastructure is beyond this project. Since you have a Synology (or you would not use this project), I recommend to use the Domain Name Server of the Synology to do this. If everything else fails, you can always hardcode the three DNS names into the `hosts` file of your development computer.
+
+The port numbers (9000, 9001 and 9002) are defined in the `docker-compose.yaml` file. If you want to change them, you can. 
+
+## Download the Project files to the Synology
+### Login to the Synology
 * Login to the Synology. How this is done depends on your platform.
   * On a Mac or Linux system, use `ssh 192.168.243.48` (the IP address is just an example, you have to use the address of your Synology).  
   * On Windows, an SSH client must be used, such as putty. You can also use the Linux subsystem of Windows 10 and there use `ssh`.
@@ -34,11 +44,39 @@ While it would be possible to use the Synology Docker GUI to download and setup 
 * If you get an error message similar to `Could not create directory '/var/services/homes/me/.ssh'` then the `home` directory support is not enabled on your Synology. For this project, this is irrelevant and the error message can be ignored.
 * Change into the directory: `cd SynologyDevServer` and see if the files are present: `ls -la`.
 
+# Startup
 ## Start the Servers
 * This command starts all of the servers: `docker-compose up -d`.
 
 ## Check if the servers are running
 Open the Docker package on the Synology. You should see all three containers running. ![Docker](screenshots/running-images.png)
+
+# First Start
+Technically we are finished now: The servers are running. Nevertheless, here are a few hints to get you started using the services.
+## Portainer
+Portainer shuts down automatically after a few Minutes if you don't access it and set an administrator password. Therefore, go ahead and access it with your web browser: `https://portainer.example.com`.
+
+Enter an admin password:
+
+![Portainer-Admin](screenshots/admin-portainer.png)
+
+Next, create a local connection (click on "local" and hit "connect"):
+
+![Portainer-Admin](screenshots/local-connect.png)
+
+If all goes well, you will see your containers:
+
+![Portainer-Admin](screenshots/containers.png)
+
+## Jenkins
+
+Type `sudo docker logs jenkins` to see the log output of Jenkins. There will be a line similar to:
+```
+Please use the following password to proceed to installation:
+
+75552df4d95248b4a7b21436cdbc872c
+```
+Open Jenkins in your web browser. 
 
 # TODO
 * Bind-Mount docker socket
@@ -51,8 +89,15 @@ Open the Docker package on the Synology. You should see all three containers run
 * Can this be hacked?
   * Possibly: If someone gains access to the Docker socket, then this person is for all practical purposes a `root` user of the entire Synology. The images `Jenkins` and `Portainer` need access to the Docker socket to function. In addition, `Portainer` runs as `root`. All of this combined means that if someone can hack `Jenkins` or `Portainer`, then this person has unlimited access to the Synology Disk Station. This is why this project is about a *private* development server, and not a public one. Do not expose this to the Internet!
 * How can I reset my servers?
-  * For a full reset, you have to delete all volumes. This can be easily done by shutting down like this: `sudo docker-compose down -v`.
+  * For a full reset, you have to delete all volumes. This can be done easily by shutting down like this: `sudo docker-compose down -v`.
   * For a partial reset, you can manually delete the matching volume. Use `sudo docker volume ls` to list the existing volumes. Then use `sudo docker volume rm [volumename]` to delete. For example, `sudo docker volume rm synologydevserver_jenkins_home` resets Jenkins.
+* Do I need Portainer?
+  * No, you can instead use the GUI of the Synology Docker package. Just remove the "Portainer" part of the docker-compose.yaml file, and also remove the "depends-on" sections in the two other services. Strictly speaking, the "depends-on" is incorrect anyway. I just wanted Portainer to be up and running before the other packages start up.
+* How do I backup the data?
+  * TODO: Provide an answer
+* How can I upgrade the packages?
+  * `sudo docker-compose down && sudo docker-compose pull && sudo docker-compose up -d`.
+  * TODO: Automatic upgrades
 
 # Release History
 * 2019-07-13: Start work
