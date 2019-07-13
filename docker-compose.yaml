@@ -1,0 +1,61 @@
+version:  '3'
+
+services:
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    restart: always
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9000:9000
+
+  jenkins:
+    image: jenkinsci/blueocean:latest
+    container_name: jenkins
+    restart: always
+    depends_on:
+      - portainer
+    user: "1000:0"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9001:8080
+    environment:
+      - JAVA_OPTS=-Dhudson:footerURL=https://jenkins.example.com
+
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    restart: always
+    depends_on:
+      - portainer
+    volumes:
+      - nexus_home:/nexus-data
+    ports:
+      - 9002:8081
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=3g
+
+#  gitlab:
+#    container_name: gitlab
+#    image: 'gitlab/gitlab-ce:latest'
+#    restart: always
+#    expose:
+#      - 8090:80
+#    environment:
+#      - GITLAB_OMNIBUS_CONFIG="external_url 'https://gitlab.example.com/'; gitlab_rails['lfs_enabled'] = true;" \
+#    volumes:
+#      - gitlab-config:/etc/gitlab
+#      - gitlab-log:/var/log/gitlab
+#      - gitlab-data:/var/opt/gitlab
+
+volumes:
+  jenkins_home:
+  nexus_home:
+  portainer_data:
+#  gitlab-config:
+#  gitlab-log:
+#  gitlab-data:

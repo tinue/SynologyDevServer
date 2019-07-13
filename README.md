@@ -1,8 +1,12 @@
 # Synology Development Server
 Use a Synology DiskStation as a private Java development server:
-* Jenkins to manage builds
-* Nexus to manage and cache packages
-* Administrative tools to support operation (Portainer)
+* [Jenkins](https://jenkins.io) to automate builds
+* [Nexus](https://www.sonatype.com/nexus-repository-sonatype) repository manager
+* [Portainer](https://www.portainer.io) Docker manager
 
-# Work in progress
-This is work in progress; Do not fork or clone.
+![DevServer](screenshots/all-apps.png)
+
+Click [here](INSTALL.md) for installation instructions.
+
+# Release History
+* 1.0.0, 2019-07-13: First version
