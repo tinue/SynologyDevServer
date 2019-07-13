@@ -22,7 +22,7 @@ While it would be possible to use the Synology Docker GUI to download and setup 
 ![ssh](screenshots/ssh.png).
 
 ### Setup the Synology Reverse Proxy
-Todays browsers do not like unencrypted web sites. To solve this problem, the Synology reverse proxy can be used to redirect traffic from a friendly URL such as `https://jenkins.example.com` to the non-encrypted site running as a docker container (such as `http://synology.example.com:9001`). As an additional bonus you do not have to remember all of the port numbers.
+Today's browsers do not like unencrypted web sites. To solve this problem, the Synology reverse proxy can be used to redirect traffic from a friendly URL such as `https://jenkins.example.com` to the non-encrypted site running as a docker container (such as `http://synology.example.com:9001`). As an additional bonus you do not have to remember all of the port numbers.
 
 To set this up, go to the "Application Portal" in the Synology Control Panel. Select the "Reverse Proxy" tab. Add three entries, so that it looks similar to this picture in the end:
 
@@ -69,19 +69,26 @@ If all goes well, you will see your containers:
 ![Portainer-Admin](screenshots/containers.png)
 
 ## Jenkins
-
-Type `sudo docker logs jenkins` to see the log output of Jenkins. There will be a line similar to:
+Type `sudo docker logs jenkins` to see the log output of Jenkins. It will take a long time for Jenkins to be ready. You need to see this line before you can continue:
+```
+INFO: Jenkins is fully up and running
+```
+ 
+ 
+There will also be a line similar to:
 ```
 Please use the following password to proceed to installation:
 
 75552df4d95248b4a7b21436cdbc872c
 ```
-Open Jenkins in your web browser. 
+Open Jenkins in your web browser. Copy the above password and paste it into the login form.
 
-# TODO
-* Bind-Mount docker socket
-* Explain Jenkins login (docker logs jenkins)
-* Explain Portainer login (shutdown after a few minutes)
+## Nexus
+Nexus used to have a default admin user. Way too many users didnt bother to update the password after the first logon, so this was recently changed. According to the documentation "the uniquely generated password can be found in the `admin.password` file inside the volume."
+
+This means we need to get access to the volume, and read this file. The simplest way that I found is to use a tiny Linux package named `busybox`. This is the command to use: `sudo docker run -it -v synologydevserver_nexus_home:/data --rm busybox`. Once you are on the command prompt, use `cat /data/admin.password`and copy the password to the clipboard.
+
+Then, open Nexus in a web browser: `https://nexus.example.com`. Click "Sign in" in the top right corner. The user is "admin", and the password is in the clipboard. The password needs to be changed right away.
 
 # FAQ
 * Why do the docker commands require `sudo`?
@@ -98,6 +105,8 @@ Open Jenkins in your web browser.
 * How can I upgrade the packages?
   * `sudo docker-compose down && sudo docker-compose pull && sudo docker-compose up -d`.
   * TODO: Automatic upgrades
+* What is this: `user: "1000:0"` in the Jenkins service description?
+  * Jenkins by default runs as `uid:gid` `1000:1000`. Most docker packages simply run as `root`, or `0:0`. Unfortunately, this does not allow to access the docker socket of the Synology Docker package. Only root can do this. The simplest workaround is to start Jenkins with a group-id of zero, or `root`.
 
 # Release History
 * 2019-07-13: Start work
