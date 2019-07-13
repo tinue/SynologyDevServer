@@ -86,14 +86,14 @@ Open Jenkins in your web browser. Copy the above password and paste it into the 
 ## Nexus
 Nexus used to have a default admin user. Way too many users didnt bother to update the password after the first logon, so this was recently changed. According to the documentation "the uniquely generated password can be found in the `admin.password` file inside the volume."
 
-This means we need to get access to the volume, and read this file. The simplest way that I found is to use a tiny Linux package named `busybox`. This is the command to use: `sudo docker run -it -v synologydevserver_nexus_home:/data --rm busybox`. Once you are on the command prompt, use `cat /data/admin.password`and copy the password to the clipboard.
+This means we need to get access to the volume, and read this file. The simplest way that I found is to use a tiny Linux package named `busybox`. This is the command to use: `sudo docker run -it -v synologydevserver_nexus_home:/data --rm busybox`. Once you are on the command prompt, use `cat /data/admin.password`and copy the password to the clipboard. Control-D gets you out of the Busybox command prompt.
 
 Then, open Nexus in a web browser: `https://nexus.example.com`. Click "Sign in" in the top right corner. The user is "admin", and the password is in the clipboard. The password needs to be changed right away.
 
 # FAQ
 * Why do the docker commands require `sudo`?
   * On Linux systems, this can be avoided by adding the user to the `docker` group. On a Synology this does not work, unfortunately.
-* Can this be hacked?
+* Can the development server be hacked?
   * Possibly: If someone gains access to the Docker socket, then this person is for all practical purposes a `root` user of the entire Synology. The images `Jenkins` and `Portainer` need access to the Docker socket to function. In addition, `Portainer` runs as `root`. All of this combined means that if someone can hack `Jenkins` or `Portainer`, then this person has unlimited access to the Synology Disk Station. This is why this project is about a *private* development server, and not a public one. Do not expose this to the Internet!
 * How can I reset my servers?
   * For a full reset, you have to delete all volumes. This can be done easily by shutting down like this: `sudo docker-compose down -v`.
