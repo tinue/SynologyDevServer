@@ -1,4 +1,4 @@
-version:  '3'
+version: '3'
 
 services:
   portainer:
@@ -39,23 +39,26 @@ services:
     environment:
       - INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=3g
 
-#  gitlab:
-#    container_name: gitlab
-#    image: 'gitlab/gitlab-ce:latest'
-#    restart: always
-#    expose:
-#      - 8090:80
-#    environment:
-#      - GITLAB_OMNIBUS_CONFIG="external_url 'https://gitlab.example.com/'; gitlab_rails['lfs_enabled'] = true;" \
-#    volumes:
-#      - gitlab-config:/etc/gitlab
-#      - gitlab-log:/var/log/gitlab
-#      - gitlab-data:/var/opt/gitlab
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    restart: always
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: CHANGEME
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 9003:8080
 
 volumes:
   jenkins_home:
   nexus_home:
   portainer_data:
-#  gitlab-config:
-#  gitlab-log:
-#  gitlab-data:
+  mariadb_data:
