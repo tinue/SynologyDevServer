@@ -13,3 +13,4 @@ Click [here](INSTALL.md) for installation instructions.
 # Release History
 * 1.0.0, 2019-07-13: First version
 * 1.1.0, 2023-01-15: Add MariaDB; Updates to reflect Synology Disk Station Manager v7.
+* 1.2.0, 2023-05-27: Use the new Synology "Container Manager" (DSM 7.2) instead of command line.

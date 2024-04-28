@@ -1,19 +1,25 @@
 # Installation
 ## Synology Preparation
-### Install Packages
-Go to the packet manager and install these packages:
-* Docker
-* Git Server
+### Install Docker and Web Station
+Go to the packet manager and install the packages `Web Station` and `Container Manager` (actually Docker and docker-compose under the hood).  
+If your Synology does not support the Container Manager, then this project is not for you.
 
-If your Synology does not support Docker, then this project is not for you.
+### Setup the directory for your project and data
+Create a directory in the existing share `docker`, and name it `synology-docker-services`.  
+Download the file `docker-compose.yml` from this project and copy it into this directory.
+![File Station](screenshots/directory.png)
 
-### Enable Secure Shell Login
-While it would be possible to use the Synology Docker GUI to download and setup all of the containers, this project uses docker-compose instead. This means that the command line is used, and this must be enabled first.
-* Open the Control Panel. Enable "Advanced Mode" if it is not enabled yet.
-* Then, select "Terminal & SNMP" and check the box for "Enable SSH service".
-* Click "Apply".
+### Create the project in Container Manager
+Open the `Container Manager`, select `Project` on the left, and then click on `Create`. Set the desired name and then click on `Set Path`
+![Project Setup Step 1](screenshots/project-step1.png)
+A pop-up will show and ask on using the detected `docker-compose.yml`. Click `Ok` to confirm.
+![Project Setup Step 2](screenshots/project-step2.png)
+Click `Next` until you are asked about `Web Portal Settings`. Enable one of the services for now, `portainer`.
+Make sure to select `https` (default is `http`), because most modern browser will have issues with http.
+![Web Portal](screenshots/webportal.png)
+Click `Done` and wait for the services to start up.
+![First startup](screenshots/firststartup.png)
 
-![ssh](screenshots/ssh.png).
 
 ### Setup the Synology Reverse Proxy
 Today's browsers do not like unencrypted web sites. To solve this problem, the Synology reverse proxy can be used to redirect traffic from a friendly URL such as `https://jenkins.example.com` to the non-encrypted site running as a docker container (such as `http://synology.example.com:9001`). As an additional bonus you do not have to remember all of the port numbers.
